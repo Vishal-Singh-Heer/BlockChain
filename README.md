@@ -1,50 +1,65 @@
-# Enhanced Blockchain Implementation
+# BlockChain
 
-A feature-rich blockchain implementation in Python with proof-of-work consensus, wallet management, and peer-to-peer networking.
+A sophisticated blockchain implementation in Python featuring advanced cryptography, proof-of-work consensus, secure wallet management, and asynchronous peer-to-peer networking.
 
 ## Features
 
-- **Advanced Blockchain Core**
-  - Proof of Work consensus mechanism
-  - Dynamic difficulty adjustment
-  - Merkle tree for efficient transaction verification
-  - Block validation and chain integrity checks
-  - Support for orphaned blocks
-  - Transaction pool management
+### Advanced Blockchain Core
+- Proof of Work consensus with dynamic difficulty adjustment
+- Merkle tree implementation for efficient transaction verification
+- Comprehensive block validation and chain integrity checks
+- Orphaned block support and reconciliation
+- Advanced transaction pool management with fee prioritization
+- Memory-efficient block storage
 
-- **Wallet System**
-  - ECDSA-based cryptographic key pairs
-  - Transaction signing and verification
-  - Balance tracking
-  - Transaction history
-  - Key import/export functionality
+### Enhanced Wallet System
+- Secure wallet generation using ECDSA and SECP256K1 curve
+- Password-protected key storage and management
+- Transaction signing with nonce tracking
+- Comprehensive transaction history tracking
+- Balance management with UTXO tracking
+- Support for custom transaction data
+- Base58Check address encoding
 
-- **Networking**
-  - Peer-to-peer communication using UDP
-  - Gossip protocol for network discovery
-  - Efficient block and transaction propagation
-  - Automatic peer management
-  - Network status monitoring
+### Asynchronous Networking
+- Asynchronous peer-to-peer communication
+- Advanced gossip protocol for network discovery
+- Efficient block and transaction propagation
+- Automatic peer management with health checks
+- Network status monitoring and metrics
+- Configurable peer limits and timeouts
 
-- **Security Features**
-  - Cryptographic signatures
-  - Hash verification
-  - Nonce validation
-  - Transaction validation
-  - Secure wallet generation
+### Security Features
+- Advanced cryptographic signatures using ECDSA
+- Multi-layer hash verification
+- Secure nonce generation and validation
+- Comprehensive transaction validation
+- Protected wallet generation and storage
+- Double-spend prevention
+
+## Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+- Virtual environment (recommended)
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/enhanced-blockchain.git
-cd enhanced-blockchain
+git clone https://github.com/yourusername/BlockChain.git
+cd BlockChain
 ```
 
-2. Create a virtual environment:
+2. Create and activate virtual environment:
 ```bash
+# On Windows
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+venv\Scripts\activate
+
+# On Unix/macOS
+python -m venv venv
+source venv/bin/activate
 ```
 
 3. Install dependencies:
@@ -52,89 +67,145 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Usage
+## Quick Start
 
-### Starting a Node
+### Initialize Node and Wallet
 
 ```python
-from src.blockchain import Blockchain
-from src.networking import GossipProtocol
+from blockchain.core import Blockchain
+from blockchain.networking import GossipProtocol
+from blockchain.wallet import Wallet
 
-# Initialize blockchain
+# Create and configure blockchain
 blockchain = Blockchain(difficulty=4)
 
-# Start node
-node = GossipProtocol("localhost", 8000, blockchain)
-node.start()
-```
-
-### Creating a Wallet
-
-```python
-from src.blockchain import Wallet
-
-# Create new wallet
-wallet = Wallet()
-
-# Get wallet address
-address = wallet.address
-
-# Export keys
-private_key, public_key = wallet.export_keys()
-```
-
-### Making Transactions
-
-```python
-# Create and sign a transaction
-transaction = wallet.create_transaction(
-    recipient="recipient_address",
-    amount=10.0,
+# Initialize network node
+node = GossipProtocol(
+    host="localhost",
+    port=8000,
     blockchain=blockchain
+)
+
+# Create wallet with password protection
+wallet = Wallet()
+exported_wallet = wallet.export_wallet(password="your-secure-password")
+```
+
+### Managing Transactions
+
+```python
+# Create transaction with custom data and fee
+transaction = wallet.create_transaction(
+    recipient="BC1q2w3e4r5t6y7u8i9o0p",
+    amount=10.0,
+    fee=0.001,
+    data={"message": "Payment for services"}
 )
 
 # Add to blockchain
 blockchain.add_transaction(transaction)
+
+# Get transaction history
+history = wallet.get_transaction_history(blockchain)
 ```
 
-### Mining Blocks
+### Mining Operations
 
 ```python
-# Mine a new block
-success = blockchain.mine_block(miner_address=wallet.address)
-if success:
-    print("Block mined successfully!")
+# Start mining node
+async def start_mining():
+    while True:
+        block = await blockchain.mine_block(wallet.address)
+        if block:
+            print(f"Block mined! Height: {block.height}, Hash: {block.hash}")
+
+# Run mining node
+import asyncio
+asyncio.run(start_mining())
 ```
 
 ## Configuration
 
-The blockchain can be configured through the `config/network_config.json` file:
-
+### Network Configuration (config/network_config.json)
 ```json
 {
-    "difficulty": 4,
-    "target_block_time": 600,
-    "max_peers": 10,
-    "peer_timeout": 300,
-    "gossip_interval": 30
+    "network": {
+        "max_peers": 10,
+        "peer_timeout": 300,
+        "gossip_interval": 30,
+        "sync_interval": 60
+    },
+    "blockchain": {
+        "difficulty": 4,
+        "target_block_time": 600,
+        "max_block_size": 1000000,
+        "min_transaction_fee": 0.0001
+    },
+    "wallet": {
+        "key_version": 1,
+        "address_prefix": "BC",
+        "min_password_length": 8
+    }
 }
 ```
 
-## Testing
-
-Run the test suite:
-
-```bash
-python -m pytest tests/
+### Logging Configuration (config/logging_config.json)
+```json
+{
+    "log_level": "INFO",
+    "format": "%(asctime)s - %(name)s - [%(levelname)s] - %(message)s",
+    "file_logging": {
+        "enabled": true,
+        "path": "logs/blockchain.log",
+        "max_size": 10485760,
+        "backup_count": 5
+    }
+}
 ```
+
+## Development
+
+### Running Tests
+```bash
+# Run all tests with coverage
+pytest tests/ --cov=blockchain
+
+# Run specific test category
+pytest tests/test_wallet.py
+pytest tests/test_blockchain.py
+pytest tests/test_networking.py
+```
+
+### Code Style
+The project follows PEP 8 guidelines. Format code using:
+```bash
+black blockchain/
+isort blockchain/
+```
+
+### Type Checking
+```bash
+mypy blockchain/
+```
+
+## Documentation
+
+Generate documentation using Sphinx:
+```bash
+cd docs
+make html
+```
+
+View the documentation at `docs/_build/html/index.html`
 
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. Run tests and type checking
+4. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+5. Push to the branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
 
 ## License
 
@@ -142,5 +213,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- The Bitcoin whitepaper for inspiration
-- The Python community for excellent cryptographic libraries
+- Bitcoin whitepaper for foundational blockchain concepts
+- The Python cryptography community
+- Contributors and maintainers of the cryptography, ecdsa, and aiohttp libraries
